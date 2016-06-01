@@ -876,15 +876,20 @@ void GCode::parseCoordinates(const QString& received, bool aggressive)
 	QRegExp rxStateMPos;
 	QRegExp rxWPos;
 	/// 3 axis
-	QString format("(-*\\d+\\.\\d+),(-*\\d+\\.\\d+)") ;
+    QString format("(-*\\d+\\.\\d+),(-*\\d+\\.\\d+),(-*\\d+\\.\\d+)") ;
     int maxaxis = MAX_AXIS_COUNT, naxis ;
-    for (naxis = DEFAULT_AXIS_COUNT; naxis <= maxaxis; naxis++) {
+    for (naxis = maxaxis; naxis >= DEFAULT_AXIS_COUNT; naxis--) {
 		if (!doubleDollarFormat)
 			captureCount = naxis ;
 		else
 			captureCount = naxis + 1 ;
 		//
-		format += ",(-*\\d+\\.\\d+)" ;
+
+
+        format =  "(-*\\d+\\.\\d+)";
+        for (int ii=1; ii<naxis; ii++)
+            format += ",(-*\\d+\\.\\d+)" ;
+
 		coordRegExp = prepend + format + append ;
 		rxStateMPos = QRegExp(preamble + coordRegExp);
 		rxWPos = QRegExp(QString("WPos:") + coordRegExp);
@@ -911,7 +916,8 @@ void GCode::parseCoordinates(const QString& received, bool aggressive)
         {
             if (naxis <= DEFAULT_AXIS_COUNT)
             {
-                QString msg = tr("Incorrect - extra axis not present in hardware but options set for > 3 axes. Please fix options.");
+
+                QString msg = tr("Incorrect - extra axis NOT present in hardware but options set for > 3 axes. Please fix options.");
                 emit addList(msg);
                 emit sendMsg(msg);
             }
